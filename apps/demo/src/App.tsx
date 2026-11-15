@@ -458,7 +458,12 @@ export default function App() {
   return (
     <AllemDevProvider>
       <div style={page}>
-        <h1 style={h1}>Allem Dev — Demo</h1>
+        <h1 style={h1}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ verticalAlign: "middle", marginRight: 8, filter: "drop-shadow(0 0 6px rgba(20, 184, 166, 0.5))" }}>
+            <path d="M13 2L4.5 13.5H11.5L10.5 22L19.5 10.5H12.5L13 2Z" fill="#14b8a6" stroke="#14b8a6" strokeWidth="0.5" strokeLinejoin="round" />
+          </svg>
+          Allem Dev — Demo
+        </h1>
         <p style={subtitle}>
           Press <kbd style={{ background: "#262626", padding: "2px 6px", borderRadius: 4, border: "1px solid #404040" }}>Ctrl+Shift+D</kbd> to
           toggle the dev panel, or click the button in the bottom-right corner.
