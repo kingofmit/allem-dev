@@ -1,13 +1,44 @@
 {
   "name": "@allem-dev/perf",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Performance metrics, Web Vitals, FPS counter, and memory tracking.",
   "author": "Ahmed Allem",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": { "build": "tsc", "dev": "tsc --watch", "clean": "rm -rf dist", "lint": "tsc --noEmit" },
-  "dependencies": { "@allem-dev/core": "workspace:*" },
-  "devDependencies": { "typescript": "^5.8.0" }
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@allem-dev/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kingofmit/allem-dev.git",
+    "directory": "packages/perf"
+  },
+  "homepage": "https://github.com/kingofmit/allem-dev",
+  "keywords": [
+    "allem-dev",
+    "performance",
+    "web-vitals",
+    "fps",
+    "memory"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  }
 }
