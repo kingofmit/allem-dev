@@ -7,7 +7,7 @@ import type { DiffResult } from "@allem-dev/state";
 import { useAllemDevCtx } from "../context";
 import { useThrottledStore } from "../hooks/useThrottledStore";
 import { badgeStyle, rowStyle } from "../theme";
-import { VirtualList } from "../primitives/VirtualList";
+import { ScrollList } from "../primitives/ScrollList";
 import { ExpandableRow } from "../primitives/ExpandableRow";
 import { JsonViewer } from "../primitives/JsonViewer";
 
@@ -210,7 +210,7 @@ function StateTab() {
             { style: { color: theme.textFaint, textAlign: "center", paddingTop: 40, fontSize: 12 } as CSSProperties },
             "No state changes recorded. Use the useTrackedState() hook to track values, or navigate to record route changes."
           )
-        : h(VirtualList, { items: filtered, rowHeight: 36, renderRow, height: 280 } as any)
+        : h(ScrollList, { items: filtered, renderRow, height: "100%" })
     )
   );
 }

@@ -30,3 +30,6 @@ export type { JsonViewerProps } from "./JsonViewer";
 
 export { VirtualList } from "./VirtualList";
 export type { VirtualListProps } from "./VirtualList";
+
+export { ScrollList } from "./ScrollList";
+export type { ScrollListProps } from "./ScrollList";

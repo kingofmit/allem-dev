@@ -16,7 +16,7 @@ import { useThrottledStore } from "../hooks/useThrottledStore";
 import { FilterBar } from "../primitives/FilterBar";
 import type { FilterItem } from "../primitives/FilterBar";
 import { SearchInput } from "../primitives/SearchInput";
-import { VirtualList } from "../primitives/VirtualList";
+import { ScrollList } from "../primitives/ScrollList";
 import { ExpandableRow } from "../primitives/ExpandableRow";
 import { JsonViewer } from "../primitives/JsonViewer";
 
@@ -292,11 +292,10 @@ function ConsoleTab(): React.ReactElement {
             { style: { color: theme.textFaint, textAlign: "center", paddingTop: 40, fontSize: 12 } as CSSProperties },
             "No console output captured. Calls to console.log, info, warn, error, and debug will appear here."
           )
-        : React.createElement(VirtualList, {
+        : React.createElement(ScrollList, {
             items: filtered,
-            rowHeight: 28,
             renderRow,
-            height: 280,
+            height: "100%",
           })
     )
   );

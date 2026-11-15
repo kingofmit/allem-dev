@@ -9,7 +9,7 @@ import { useThrottledStore } from "../hooks/useThrottledStore";
 import { SearchInput } from "../primitives/SearchInput";
 import { FilterBar } from "../primitives/FilterBar";
 import type { FilterItem } from "../primitives/FilterBar";
-import { VirtualList } from "../primitives/VirtualList";
+import { ScrollList } from "../primitives/ScrollList";
 import { StatusDot } from "../primitives/StatusDot";
 import { ExpandableRow } from "../primitives/ExpandableRow";
 import { JsonViewer } from "../primitives/JsonViewer";
@@ -384,11 +384,10 @@ function NetworkTab(): React.ReactElement {
             { style: { color: theme.textFaint, textAlign: "center", paddingTop: 40, fontSize: 12 } as CSSProperties },
             "No network requests captured yet. Make a fetch() or XMLHttpRequest call to see it here."
           )
-        : React.createElement(VirtualList, {
+        : React.createElement(ScrollList, {
             items: filtered,
-            rowHeight: 36,
             renderRow,
-            height: 280,
+            height: "100%",
           })
     )
   );
