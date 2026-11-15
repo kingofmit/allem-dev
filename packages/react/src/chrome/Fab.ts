@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import type { ThemeTokens } from "../theme";
-import { Zap } from "lucide-react";
+import { BoltIcon } from "./BoltIcon";
 
 export interface FabProps {
   onClick: () => void;
@@ -48,7 +48,7 @@ export function Fab({ onClick, errorCount, theme, shortcut }: FabProps): React.R
     onClick,
     title: `Toggle Allem Dev${shortcut ? ` (${shortcut})` : ""}`,
   },
-    React.createElement(Zap, { size: 16, strokeWidth: 2.5, fill: "currentColor" }),
+    React.createElement(BoltIcon, { size: 18, glow: true }),
     // Error count badge
     errorCount > 0
       ? React.createElement("span", {
