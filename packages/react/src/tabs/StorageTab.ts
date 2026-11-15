@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { useAllemDevCtx } from "../context";
 import { monoText } from "../theme";
 import { SearchInput } from "../primitives/SearchInput";
-import { VirtualList } from "../primitives/VirtualList";
+import { ScrollList } from "../primitives/ScrollList";
 import { ExpandableRow } from "../primitives/ExpandableRow";
 import { JsonViewer } from "../primitives/JsonViewer";
 import { CopyButton } from "../primitives/CopyButton";
@@ -326,11 +326,10 @@ function StorageTab(): React.ReactElement {
               ? `No items in ${storageType}`
               : "No matching keys"
           )
-        : React.createElement(VirtualList, {
+        : React.createElement(ScrollList, {
             items: filtered,
-            rowHeight: 36,
             renderRow,
-            height: 280,
+            height: "100%",
           })
     )
   );

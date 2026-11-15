@@ -10,7 +10,7 @@ import { badgeStyle, monoText } from "../theme";
 import { useThrottledStore } from "../hooks/useThrottledStore";
 import { FilterBar } from "../primitives/FilterBar";
 import type { FilterItem } from "../primitives/FilterBar";
-import { VirtualList } from "../primitives/VirtualList";
+import { ScrollList } from "../primitives/ScrollList";
 import { ExpandableRow } from "../primitives/ExpandableRow";
 import { CopyButton } from "../primitives/CopyButton";
 
@@ -297,11 +297,10 @@ function ErrorsTab(): React.ReactElement {
             { style: { color: theme.textFaint, textAlign: "center", paddingTop: 40, fontSize: 12 } as CSSProperties },
             "No errors captured. Runtime errors, unhandled rejections, and console.error calls will appear here."
           )
-        : React.createElement(VirtualList, {
+        : React.createElement(ScrollList, {
             items: groups,
-            rowHeight: 36,
             renderRow,
-            height: 280,
+            height: "100%",
           })
     )
   );

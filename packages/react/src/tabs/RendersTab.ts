@@ -5,7 +5,7 @@ import { formatMs, timeAgo } from "@allem-dev/core";
 import { useAllemDevCtx } from "../context";
 import { useThrottledStore } from "../hooks/useThrottledStore";
 import { durationColor, badgeStyle, rowStyle } from "../theme";
-import { VirtualList } from "../primitives/VirtualList";
+import { ScrollList } from "../primitives/ScrollList";
 import { ExpandableRow } from "../primitives/ExpandableRow";
 
 const h = React.createElement;
@@ -157,7 +157,7 @@ function RendersTab() {
             { style: { color: theme.textFaint, textAlign: "center", paddingTop: 40, fontSize: 12 } as CSSProperties },
             "No renders tracked yet. Wrap components with <AllemDevProfiler> to start tracking."
           )
-        : h(VirtualList, { items: sorted, rowHeight: 36, renderRow, height: 280 } as any)
+        : h(ScrollList, { items: sorted, renderRow, height: "100%" })
     )
   );
 }
