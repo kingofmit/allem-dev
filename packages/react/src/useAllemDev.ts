@@ -6,44 +6,58 @@ import { StateStore } from "@allem-dev/state";
 import { ErrorStore, installErrorCatcher, interceptConsoleErrors } from "@allem-dev/errors";
 import { observeWebVitals, trackFPS, trackMemory, MemorySnapshot } from "@allem-dev/perf";
 import type { PerfMetric } from "@allem-dev/core";
-
-export interface AllemDevContext {
-  panel: PanelManager;
-  network: NetworkStore;
-  renders: RenderStore;
-  state: StateStore;
-  errors: ErrorStore;
-  vitals: PerfMetric[];
-  fps: number;
-  memory: MemorySnapshot | null;
-  toggle: () => void;
-  isVisible: boolean;
-}
+import { SimpleStore } from "./SimpleStore";
+import { getTheme, ThemeTokens } from "./theme";
+import { ConsoleStore } from "./console/ConsoleStore";
+import { interceptConsole } from "./console/interceptor";
+import { MockStore } from "./mocking/MockStore";
+import { installMockInterceptor } from "./mocking/mockInterceptor";
+import { PluginManager } from "./plugins/PluginManager";
+import { trackRouteChanges } from "./routing/routeTracker";
+import type { AllemDevContextValue } from "./context";
 
 /** Hook that initializes all Allem Dev subsystems */
-export function useAllemDev(config: Partial<PanelConfig> = {}): AllemDevContext {
-  const panelRef = useRef<PanelManager>(new PanelManager({ ...DEFAULT_CONFIG, ...config }));
-  const networkRef = useRef<NetworkStore>(new NetworkStore(config.maxEntries));
-  const rendersRef = useRef<RenderStore>(new RenderStore(config.maxEntries));
-  const stateRef = useRef<StateStore>(new StateStore(config.maxEntries));
-  const errorsRef = useRef<ErrorStore>(new ErrorStore(config.maxEntries));
-  const vitalsRef = useRef<PerfMetric[]>([]);
-  const fpsRef = useRef(0);
-  const memoryRef = useRef<MemorySnapshot | null>(null);
+export function useAllemDev(config: Partial<PanelConfig> = {}): AllemDevContextValue {
+  const fullConfig = useRef({ ...DEFAULT_CONFIG, ...config }).current;
+
+  const panelRef = useRef(new PanelManager(fullConfig));
+  const networkRef = useRef(new NetworkStore(fullConfig.maxEntries));
+  const rendersRef = useRef(new RenderStore(fullConfig.maxEntries));
+  const stateRef = useRef(new StateStore(fullConfig.maxEntries));
+  const errorsRef = useRef(new ErrorStore(fullConfig.maxEntries));
+  const consoleRef = useRef(new ConsoleStore(fullConfig.maxEntries));
+  const mocksRef = useRef(new MockStore());
+  const pluginsRef = useRef(new PluginManager());
+  const vitalsStore = useRef(new SimpleStore<PerfMetric[]>([])).current;
+  const fpsStore = useRef(new SimpleStore<number>(0)).current;
+  const memoryStore = useRef(new SimpleStore<MemorySnapshot | null>(null)).current;
 
   const isVisible = useSyncExternalStore(
     (cb) => panelRef.current.subscribe(cb),
     () => panelRef.current.isVisible(),
   );
 
+  const activeTab = useSyncExternalStore(
+    (cb) => panelRef.current.subscribe(cb),
+    () => panelRef.current.getActiveTab(),
+  );
+
+  const vitals = useSyncExternalStore(vitalsStore.subscribe, vitalsStore.get);
+  const fps = useSyncExternalStore(fpsStore.subscribe, fpsStore.get);
+  const memory = useSyncExternalStore(memoryStore.subscribe, memoryStore.get);
+
+  const theme = getTheme(fullConfig.theme);
   const toggle = useCallback(() => panelRef.current.toggle(), []);
 
   useEffect(() => {
     const cleanups: Array<() => void> = [];
 
     // Keyboard shortcut
-    const fullConfig = { ...DEFAULT_CONFIG, ...config };
     cleanups.push(registerShortcut(fullConfig.shortcut, toggle));
+
+    // Mock interceptor (must be before network interceptors so mocked
+    // responses are also logged by the network store)
+    cleanups.push(installMockInterceptor(mocksRef.current));
 
     // Network interceptors
     cleanups.push(interceptFetch(networkRef.current));
@@ -53,16 +67,22 @@ export function useAllemDev(config: Partial<PanelConfig> = {}): AllemDevContext 
     cleanups.push(installErrorCatcher(errorsRef.current));
     cleanups.push(interceptConsoleErrors(errorsRef.current));
 
+    // Console interceptor (captures log/info/warn/debug in addition to errors)
+    cleanups.push(interceptConsole(consoleRef.current));
+
     // Web Vitals
     cleanups.push(observeWebVitals((metric) => {
-      vitalsRef.current = [...vitalsRef.current.filter((v) => v.name !== metric.name), metric];
+      vitalsStore.set([...vitalsStore.get().filter((v) => v.name !== metric.name), metric]);
     }));
 
     // FPS tracking
-    cleanups.push(trackFPS((fps) => { fpsRef.current = fps; }));
+    cleanups.push(trackFPS((value) => { fpsStore.set(value); }));
 
     // Memory tracking
-    cleanups.push(trackMemory((snapshot) => { memoryRef.current = snapshot; }));
+    cleanups.push(trackMemory((snapshot) => { memoryStore.set(snapshot); }));
+
+    // Route change tracking
+    cleanups.push(trackRouteChanges(stateRef.current));
 
     return () => cleanups.forEach((fn) => fn());
   }, []);
@@ -73,10 +93,15 @@ export function useAllemDev(config: Partial<PanelConfig> = {}): AllemDevContext 
     renders: rendersRef.current,
     state: stateRef.current,
     errors: errorsRef.current,
-    vitals: vitalsRef.current,
-    fps: fpsRef.current,
-    memory: memoryRef.current,
+    console: consoleRef.current,
+    mocks: mocksRef.current,
+    plugins: pluginsRef.current,
+    vitals,
+    fps,
+    memory,
+    theme,
     toggle,
     isVisible,
+    activeTab,
   };
 }

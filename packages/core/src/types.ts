@@ -4,7 +4,7 @@ export interface DevTab {
   label: string;
   icon?: string;
   badge?: number;
-  render: () => string;
+  render?: () => unknown;
 }
 
 /** Severity level for entries */
@@ -99,7 +99,7 @@ export const DEFAULT_CONFIG: PanelConfig = {
   position: "bottom",
   defaultTab: "network",
   height: 350,
-  width: 420,
+  width: 520,
   opacity: 0.95,
   theme: "dark",
   maxEntries: 500,

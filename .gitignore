@@ -1,6 +1,47 @@
+# Dependencies
 node_modules
+
+# Build output
 dist
-.turbo
 *.tsbuildinfo
+
+# Turbo
+.turbo
+
+# OS
 .DS_Store
+Thumbs.db
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Test / coverage
 coverage
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Playwright MCP artifacts
+.playwright-mcp
+
+# Screenshots from testing
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Changesets temp
+.changeset/*.md
+!.changeset/README.md
+!.changeset/config.json

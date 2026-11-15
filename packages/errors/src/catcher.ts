@@ -36,19 +36,27 @@ export function installErrorCatcher(store: ErrorStore): () => void {
 /** Intercept console.error calls */
 export function interceptConsoleErrors(store: ErrorStore): () => void {
   const originalError = console.error;
+  let recording = false;
 
   console.error = function (...args: unknown[]) {
-    const message = args.map((a) => (a instanceof Error ? a.message : String(a))).join(" ");
-    const stack = args.find((a) => a instanceof Error) instanceof Error
-      ? (args.find((a) => a instanceof Error) as Error).stack ?? null
-      : null;
+    if (!recording) {
+      recording = true;
+      try {
+        const message = args.map((a) => (a instanceof Error ? a.message : String(a))).join(" ");
+        const stack = args.find((a) => a instanceof Error) instanceof Error
+          ? (args.find((a) => a instanceof Error) as Error).stack ?? null
+          : null;
 
-    store.add({
-      timestamp: Date.now(),
-      message,
-      stack,
-      source: "console",
-    });
+        store.add({
+          timestamp: Date.now(),
+          message,
+          stack,
+          source: "console",
+        });
+      } finally {
+        recording = false;
+      }
+    }
 
     originalError.apply(console, args);
   };

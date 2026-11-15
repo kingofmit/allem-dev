@@ -1,4 +1,4 @@
-import { NetworkEntry, uid, now } from "@allem-dev/core";
+import { uid } from "@allem-dev/core";
 import { NetworkStore } from "./store";
 
 /** Intercept all fetch() calls and log them */
@@ -8,7 +8,7 @@ export function interceptFetch(store: NetworkStore): () => void {
   window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
     const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
     const method = init?.method?.toUpperCase() ?? "GET";
-    const startTime = now();
+    const startTime = Date.now();
     const id = uid();
 
     const entry = store.add({
@@ -27,7 +27,7 @@ export function interceptFetch(store: NetworkStore): () => void {
 
     try {
       const response = await originalFetch.call(window, input, init);
-      const endTime = now();
+      const endTime = Date.now();
       const cloned = response.clone();
       let responseBody: unknown = null;
       try {
@@ -51,7 +51,7 @@ export function interceptFetch(store: NetworkStore): () => void {
 
       return response;
     } catch (err) {
-      const endTime = now();
+      const endTime = Date.now();
       store.update(entry.id, {
         status: 0,
         endTime,
@@ -80,7 +80,7 @@ export function interceptXHR(store: NetworkStore): () => void {
     const meta = (this as any).__allemDev;
     if (!meta) return originalSend.apply(this, arguments as any);
 
-    const startTime = now();
+    const startTime = Date.now();
     const entry = store.add({
       method: meta.method,
       url: meta.url,
@@ -96,7 +96,7 @@ export function interceptXHR(store: NetworkStore): () => void {
     });
 
     this.addEventListener("load", () => {
-      const endTime = now();
+      const endTime = Date.now();
       store.update(entry.id, {
         status: this.status,
         endTime,
@@ -106,7 +106,7 @@ export function interceptXHR(store: NetworkStore): () => void {
     });
 
     this.addEventListener("error", () => {
-      const endTime = now();
+      const endTime = Date.now();
       store.update(entry.id, {
         status: 0,
         endTime,

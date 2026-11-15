@@ -1,0 +1,1 @@
+export { trackRouteChanges } from "./routeTracker";

@@ -3,6 +3,7 @@ import { StateEntry, uid } from "@allem-dev/core";
 /** In-memory store for state changes */
 export class StateStore {
   private entries: StateEntry[] = [];
+  private snapshot: StateEntry[] = [];
   private maxEntries: number;
   private listeners = new Set<() => void>();
 
@@ -18,8 +19,13 @@ export class StateStore {
     return full;
   }
 
-  getAll(): StateEntry[] { return [...this.entries]; }
-  clear(): void { this.entries = []; this.notify(); }
+  getAll = (): StateEntry[] => this.snapshot;
+
+  clear(): void {
+    this.entries = [];
+    this.notify();
+  }
+
   getCount(): number { return this.entries.length; }
 
   getByStore(storeName: string): StateEntry[] {
@@ -31,12 +37,13 @@ export class StateStore {
     return this.entries.filter((e) => e.timestamp >= since);
   }
 
-  subscribe(listener: () => void): () => void {
+  subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
-  }
+  };
 
   private notify(): void {
+    this.snapshot = [...this.entries];
     this.listeners.forEach((fn) => fn());
   }
 }

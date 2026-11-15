@@ -29,10 +29,8 @@ export class PanelManager {
   }
 
   setActiveTab(id: string): void {
-    if (this.tabs.find((t) => t.id === id)) {
-      this.activeTab = id;
-      this.notify();
-    }
+    this.activeTab = id;
+    this.notify();
   }
 
   toggle(): void {

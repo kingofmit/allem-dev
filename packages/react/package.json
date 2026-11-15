@@ -6,15 +6,23 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": { "build": "tsc", "dev": "tsc --watch", "clean": "rm -rf dist", "lint": "tsc --noEmit" },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
   "dependencies": {
     "@allem-dev/core": "workspace:*",
+    "@allem-dev/errors": "workspace:*",
     "@allem-dev/network": "workspace:*",
+    "@allem-dev/perf": "workspace:*",
     "@allem-dev/renders": "workspace:*",
     "@allem-dev/state": "workspace:*",
-    "@allem-dev/perf": "workspace:*",
-    "@allem-dev/errors": "workspace:*"
+    "lucide-react": "^1.73.0"
   },
   "peerDependencies": {
     "react": ">=18",
