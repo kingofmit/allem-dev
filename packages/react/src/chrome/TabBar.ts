@@ -5,6 +5,7 @@ import {
   Globe, RotateCw, Database, Zap, AlertCircle, Terminal, HardDrive, Plug,
   LayoutGrid, Moon, X,
 } from "lucide-react";
+import { BoltIcon } from "./BoltIcon";
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
   globe: Globe,
@@ -171,7 +172,7 @@ export function TabBar({
     React.createElement("span", {
       style: { color: theme.accent, fontWeight: "bold", marginRight: 16, fontSize: 13, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 },
     },
-      React.createElement(Zap, { size: 14, strokeWidth: 2.5 }),
+      React.createElement(BoltIcon, { size: 16, glow: true }),
       "Allem Dev",
     ),
 
