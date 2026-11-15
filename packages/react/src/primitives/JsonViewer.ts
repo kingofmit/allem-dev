@@ -9,13 +9,18 @@ export interface JsonViewerProps {
   collapsed?: boolean;
 }
 
+/**
+ * Render a single value node. `ancestors` is the set of object references
+ * on the path from root to the current node — used to detect true circular
+ * references. It is never mutated; each branch gets its own copy.
+ */
 function renderNode(
   data: unknown,
   theme: ThemeTokens,
   depth: number,
   maxDepth: number,
   defaultCollapsed: boolean,
-  seen: WeakSet<object>
+  ancestors: ReadonlySet<object>,
 ): React.ReactElement {
   if (data === null) {
     return React.createElement("span", { style: { color: theme.textFaint } }, "null");
@@ -35,7 +40,7 @@ function renderNode(
   }
 
   if (typeof data === "object") {
-    if (seen.has(data)) {
+    if (ancestors.has(data)) {
       return React.createElement("span", { style: { color: theme.textFaint, fontStyle: "italic" } }, "[Circular]");
     }
 
@@ -50,11 +55,10 @@ function renderNode(
       return React.createElement("span", { style: { color: theme.textFaint } }, summary);
     }
 
-    // Add to seen for circular detection in descendants only.
-    // The seen set is mutated here; this is safe because renderNode is called
-    // synchronously during render and each object only appears once in a
-    // non-circular tree. For true circular refs, the check above catches it.
-    seen.add(data);
+    // Create a new set that includes this object for children to check against.
+    // This is immutable-style: no mutation during render.
+    const childAncestors = new Set(ancestors);
+    childAncestors.add(data);
 
     return React.createElement(CollapsibleNode, {
       entries,
@@ -64,7 +68,7 @@ function renderNode(
       depth,
       maxDepth,
       defaultCollapsed,
-      seen,
+      ancestors: childAncestors,
       isArray,
     });
   }
@@ -80,7 +84,7 @@ interface CollapsibleNodeProps {
   depth: number;
   maxDepth: number;
   defaultCollapsed: boolean;
-  seen: WeakSet<object>;
+  ancestors: ReadonlySet<object>;
   isArray: boolean;
 }
 
@@ -92,7 +96,7 @@ function CollapsibleNode({
   depth,
   maxDepth,
   defaultCollapsed,
-  seen,
+  ancestors,
   isArray,
 }: CollapsibleNodeProps): React.ReactElement {
   const [collapsed, setCollapsed] = React.useState(defaultCollapsed);
@@ -128,7 +132,7 @@ function CollapsibleNode({
       !isArray
         ? React.createElement("span", { style: { color: theme.text } }, `${key}: `)
         : null,
-      renderNode(val, theme, depth + 1, maxDepth, defaultCollapsed, seen),
+      renderNode(val, theme, depth + 1, maxDepth, defaultCollapsed, ancestors),
       i < entries.length - 1 ? "," : null
     )
   );
@@ -148,10 +152,6 @@ function CollapsibleNode({
 }
 
 export function JsonViewer({ data, theme, maxDepth = 4, collapsed = false }: JsonViewerProps): React.ReactElement {
-  // Fresh WeakSet per render — must not persist across renders or the same
-  // object would be flagged as circular on re-render.
-  const seen = new WeakSet<object>();
-
   const containerStyle: CSSProperties = {
     fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', monospace",
     fontSize: 11,
@@ -163,6 +163,6 @@ export function JsonViewer({ data, theme, maxDepth = 4, collapsed = false }: Jso
   return React.createElement(
     "div",
     { style: containerStyle },
-    renderNode(data, theme, 0, maxDepth, collapsed, seen)
+    renderNode(data, theme, 0, maxDepth, collapsed, new Set<object>())
   );
 }
