@@ -1,13 +1,43 @@
 {
   "name": "@allem-dev/errors",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Error boundary, unhandled rejection catcher, and stack trace parsing.",
   "author": "Ahmed Allem",
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": { "build": "tsc", "dev": "tsc --watch", "clean": "rm -rf dist", "lint": "tsc --noEmit" },
-  "dependencies": { "@allem-dev/core": "workspace:*" },
-  "devDependencies": { "typescript": "^5.8.0" }
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@allem-dev/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kingofmit/allem-dev.git",
+    "directory": "packages/errors"
+  },
+  "homepage": "https://github.com/kingofmit/allem-dev",
+  "keywords": [
+    "allem-dev",
+    "errors",
+    "error-boundary",
+    "stack-trace"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  }
 }

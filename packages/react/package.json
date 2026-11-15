@@ -1,6 +1,6 @@
 {
   "name": "allem-dev",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The floating dev panel for React. One import, zero config. Cmd+Shift+D to toggle.",
   "author": "Ahmed Allem",
   "license": "MIT",
@@ -32,5 +32,29 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "typescript": "^5.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kingofmit/allem-dev.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/kingofmit/allem-dev",
+  "keywords": [
+    "react",
+    "devtools",
+    "dev-panel",
+    "debugging",
+    "network",
+    "performance",
+    "profiler",
+    "state",
+    "errors"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   }
 }
