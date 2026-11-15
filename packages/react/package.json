@@ -1,0 +1,28 @@
+{
+  "name": "allem-dev",
+  "version": "0.1.0",
+  "description": "The floating dev panel for React. One import, zero config. Cmd+Shift+D to toggle.",
+  "author": "Ahmed Allem",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": { "build": "tsc", "dev": "tsc --watch", "clean": "rm -rf dist", "lint": "tsc --noEmit" },
+  "dependencies": {
+    "@allem-dev/core": "workspace:*",
+    "@allem-dev/network": "workspace:*",
+    "@allem-dev/renders": "workspace:*",
+    "@allem-dev/state": "workspace:*",
+    "@allem-dev/perf": "workspace:*",
+    "@allem-dev/errors": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.8.0"
+  }
+}

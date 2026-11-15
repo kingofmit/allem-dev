@@ -1,0 +1,29 @@
+{
+  "title": "Allem Dev: The Floating Dev Panel for React",
+  "description": "Allem Dev is an open-source floating developer panel for React applications. It provides an API request inspector, component re-render tracker, state change timeline, performance profiler, error catcher, and environment viewer — all toggled with a keyboard shortcut. One import, zero config.",
+  "creators": [
+    {
+      "name": "Allem, Ahmed",
+      "orcid": "0009-0003-4937-5858",
+      "affiliation": "Massachusetts Institute of Technology"
+    }
+  ],
+  "upload_type": "software",
+  "license": "MIT",
+  "keywords": [
+    "React",
+    "developer tools",
+    "devtools",
+    "debugging",
+    "TypeScript",
+    "open source"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/kingofmit/allem-dev",
+      "relation": "isSupplementTo",
+      "resource_type": "software",
+      "scheme": "url"
+    }
+  ]
+}
