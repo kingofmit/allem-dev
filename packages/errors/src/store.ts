@@ -3,6 +3,7 @@ import { ErrorEntry, uid } from "@allem-dev/core";
 /** In-memory store for caught errors */
 export class ErrorStore {
   private entries: ErrorEntry[] = [];
+  private snapshot: ErrorEntry[] = [];
   private maxEntries: number;
   private listeners = new Set<() => void>();
 
@@ -18,16 +19,22 @@ export class ErrorStore {
     return full;
   }
 
-  getAll(): ErrorEntry[] { return [...this.entries]; }
-  clear(): void { this.entries = []; this.notify(); }
-  getCount(): number { return this.entries.length; }
+  getAll = (): ErrorEntry[] => this.snapshot;
 
-  subscribe(listener: () => void): () => void {
-    this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+  clear(): void {
+    this.entries = [];
+    this.notify();
   }
 
+  getCount(): number { return this.entries.length; }
+
+  subscribe = (listener: () => void): (() => void) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+
   private notify(): void {
+    this.snapshot = [...this.entries];
     this.listeners.forEach((fn) => fn());
   }
 }

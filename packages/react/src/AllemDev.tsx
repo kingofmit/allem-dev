@@ -1,136 +1,194 @@
-import React from "react";
-import { PanelConfig } from "@allem-dev/core";
+import React, { useState, useCallback, useMemo, Suspense, lazy } from "react";
+import { createPortal } from "react-dom";
+import type { PanelConfig } from "@allem-dev/core";
 import { useAllemDev } from "./useAllemDev";
+import { AllemDevCtx } from "./context";
+import { getTheme } from "./theme";
+import { getPortalContainer } from "./portal";
+import { PanelShell } from "./chrome/PanelShell";
+import { TabBar, TAB_DEFS } from "./chrome/TabBar";
+import type { TabDef } from "./chrome/TabBar";
+import { ResizeHandle } from "./chrome/ResizeHandle";
+import { Fab } from "./chrome/Fab";
+import { loadPanelState, savePanelState } from "./chrome/PanelPersistence";
+import { usePanelResize } from "./hooks/usePanelResize";
+import { useStoreSubscription } from "./hooks/useStoreSubscription";
+
+const NetworkTab = lazy(() => import("./tabs/NetworkTab"));
+const ErrorsTab = lazy(() => import("./tabs/ErrorsTab"));
+const RendersTab = lazy(() => import("./tabs/RendersTab"));
+const PerfTab = lazy(() => import("./tabs/PerfTab"));
+const StateTab = lazy(() => import("./tabs/StateTab"));
+const ConsoleTab = lazy(() => import("./tabs/ConsoleTab"));
+const StorageTab = lazy(() => import("./tabs/StorageTab"));
+
+const TAB_COMPONENTS: Record<string, React.LazyExoticComponent<React.ComponentType>> = {
+  network: NetworkTab,
+  errors: ErrorsTab,
+  renders: RendersTab,
+  perf: PerfTab,
+  state: StateTab,
+  console: ConsoleTab,
+  storage: StorageTab,
+};
+
+/** Extended tab definitions including new advanced tabs */
+const ALL_TAB_DEFS: TabDef[] = [
+  ...TAB_DEFS,
+  { id: "console", label: "Console", icon: "terminal" },
+  { id: "storage", label: "Storage", icon: "hard-drive" },
+];
 
 export interface AllemDevProps {
-  /** Override default panel configuration */
   config?: Partial<PanelConfig>;
-  /** Completely disable the panel (useful for production builds) */
   disabled?: boolean;
 }
 
-/**
- * Drop-in dev panel for React apps.
- *
- * ```tsx
- * import { AllemDev } from "allem-dev";
- *
- * function App() {
- *   return (
- *     <>
- *       <YourApp />
- *       <AllemDev />
- *     </>
- *   );
- * }
- * ```
- *
- * Toggle with Ctrl+Shift+D (or Cmd+Shift+D on Mac).
- */
 export function AllemDev({ config, disabled }: AllemDevProps): React.ReactElement | null {
   const ctx = useAllemDev(config);
 
   if (disabled) return null;
   if (typeof window === "undefined") return null;
-  if (!config?.enableInProduction && process.env.NODE_ENV === "production") return null;
+  if (!config?.enableInProduction && typeof globalThis !== "undefined" && (globalThis as any).process?.env?.NODE_ENV === "production") return null;
 
-  if (!ctx.isVisible) {
-    return React.createElement("div", {
-      style: {
-        position: "fixed",
-        bottom: 12,
-        right: 12,
-        zIndex: 99999,
-        width: 36,
-        height: 36,
-        borderRadius: "50%",
-        background: "rgba(20, 184, 166, 0.9)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        cursor: "pointer",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-        fontSize: 16,
-        color: "#fff",
-        fontFamily: "monospace",
-        fontWeight: "bold",
-      },
-      onClick: ctx.toggle,
-      title: "Toggle Allem Dev (Ctrl+Shift+D)",
-    }, "⚡");
-  }
-
-  const panelConfig = ctx.panel.getConfig();
-  const networkEntries = ctx.network.getAll();
-  const errorEntries = ctx.errors.getAll();
-  const renderEntries = ctx.renders.getAll();
-
-  return React.createElement("div", {
-    style: {
-      position: "fixed",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      height: panelConfig.height,
-      zIndex: 99999,
-      background: "rgba(15, 15, 15, 0.97)",
-      color: "#e5e5e5",
-      fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', monospace",
-      fontSize: 12,
-      borderTop: "1px solid rgba(255,255,255,0.1)",
-      display: "flex",
-      flexDirection: "column",
-      backdropFilter: "blur(12px)",
-    },
-  },
-    // Tab bar
-    React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
-        padding: "0 12px",
-        height: 36,
-        gap: 2,
-      },
-    },
-      React.createElement("span", { style: { color: "#14b8a6", fontWeight: "bold", marginRight: 16, fontSize: 13 } }, "⚡ Allem Dev"),
-      tabButton("Network", networkEntries.length),
-      tabButton("Renders", renderEntries.length),
-      tabButton("State", ctx.state.getCount()),
-      tabButton("Perf", ctx.vitals.length),
-      tabButton("Errors", errorEntries.length, errorEntries.length > 0),
-      React.createElement("div", { style: { marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" } },
-        React.createElement("span", { style: { color: "#737373" } }, `${ctx.fps} FPS`),
-        ctx.memory && React.createElement("span", { style: { color: "#737373" } }, `${Math.round(ctx.memory.usedJSHeapSize / 1048576)}MB`),
-        React.createElement("button", {
-          onClick: ctx.toggle,
-          style: { background: "none", border: "none", color: "#737373", cursor: "pointer", fontSize: 16, padding: 4 },
-        }, "✕"),
-      ),
-    ),
-    // Content area
-    React.createElement("div", {
-      style: { flex: 1, overflow: "auto", padding: "8px 12px" },
-    },
-      React.createElement("div", { style: { color: "#737373", textAlign: "center", paddingTop: 40 } },
-        `${networkEntries.length} requests · ${renderEntries.length} renders · ${errorEntries.length} errors`,
-      ),
-    ),
+  return React.createElement(AllemDevCtx.Provider, { value: ctx },
+    React.createElement(AllemDevInner, null),
   );
 }
 
-function tabButton(label: string, count: number, isError = false) {
-  return React.createElement("button", {
-    style: {
-      background: "none",
-      border: "none",
-      color: isError && count > 0 ? "#ef4444" : "#a3a3a3",
-      cursor: "pointer",
-      padding: "6px 12px",
-      fontSize: 12,
-      fontFamily: "inherit",
-      borderBottom: "2px solid transparent",
+function AllemDevInner(): React.ReactElement | null {
+  const ctx = React.useContext(AllemDevCtx)!;
+  const { panel, isVisible, activeTab, toggle, fps, memory, theme } = ctx;
+  const panelConfig = panel.getConfig();
+
+  // Subscribe to plugin changes — getAll is a stable arrow fn returning cached snapshot
+  const pluginList = useStoreSubscription(
+    ctx.plugins.subscribe,
+    ctx.plugins.getAll,
+  );
+
+  // Build full tab list: built-in + plugin tabs
+  const allTabs = useMemo(() => {
+    const pluginTabs: TabDef[] = pluginList.map((p) => ({
+      id: p.id,
+      label: p.label,
+      icon: p.icon || "plug",
+    }));
+    return [...ALL_TAB_DEFS, ...pluginTabs];
+  }, [pluginList]);
+
+  // Panel position (persisted)
+  const persisted = useMemo(() => loadPanelState(), []);
+  const [position, setPosition] = useState<"bottom" | "right" | "floating">(
+    persisted.position || panelConfig.position,
+  );
+
+  // Panel theme (persisted)
+  const [themeMode, setThemeMode] = useState<"dark" | "light" | "auto">(
+    persisted.theme || panelConfig.theme,
+  );
+  const currentTheme = useMemo(() => getTheme(themeMode), [themeMode]);
+
+  // Panel resize
+  const initialSize = position === "right"
+    ? (persisted.width || panelConfig.width)
+    : (persisted.height || panelConfig.height);
+  const { size, onPointerDown } = usePanelResize(position, initialSize);
+
+  // Tab badges
+  const badges = useMemo(() => ({
+    network: ctx.network.getCount(),
+    renders: ctx.renders.getCount(),
+    state: ctx.state.getCount(),
+    perf: ctx.vitals.length,
+    errors: ctx.errors.getCount(),
+    console: ctx.console.getCount(),
+    storage: 0,
+  }), [ctx.network.getCount(), ctx.renders.getCount(), ctx.state.getCount(), ctx.vitals.length, ctx.errors.getCount(), ctx.console.getCount()]);
+
+  const handleTabChange = useCallback((tabId: string) => {
+    panel.setActiveTab(tabId);
+    savePanelState({ activeTab: tabId });
+  }, [panel]);
+
+  const handlePositionCycle = useCallback(() => {
+    const positions: Array<"bottom" | "right" | "floating"> = ["bottom", "right", "floating"];
+    const next = positions[(positions.indexOf(position) + 1) % positions.length];
+    setPosition(next);
+    savePanelState({ position: next });
+  }, [position]);
+
+  const handleThemeToggle = useCallback(() => {
+    const modes: Array<"dark" | "light" | "auto"> = ["dark", "light", "auto"];
+    const next = modes[(modes.indexOf(themeMode) + 1) % modes.length];
+    setThemeMode(next);
+    savePanelState({ theme: next });
+  }, [themeMode]);
+
+  if (!isVisible) {
+    return createPortal(
+      React.createElement(Fab, {
+        onClick: toggle,
+        errorCount: ctx.errors.getCount(),
+        theme: currentTheme,
+        shortcut: panelConfig.shortcut,
+      }),
+      getPortalContainer(),
+    );
+  }
+
+  // Resolve tab component — check built-in tabs, then plugins
+  let ActiveTabComponent = TAB_COMPONENTS[activeTab];
+  let pluginRender: (() => React.ReactElement) | null = null;
+  if (!ActiveTabComponent) {
+    const plugin = ctx.plugins.get(activeTab);
+    if (plugin) pluginRender = plugin.render;
+  }
+
+  const memoryMB = memory ? Math.round(memory.usedJSHeapSize / 1048576) : null;
+
+  return createPortal(
+    React.createElement(PanelShell, {
+      position,
+      size,
+      theme: currentTheme,
+      opacity: panelConfig.opacity,
     },
-  }, `${label}${count > 0 ? ` (${count})` : ""}`);
+      React.createElement(ResizeHandle, {
+        position,
+        onPointerDown,
+        theme: currentTheme,
+      }),
+      React.createElement(TabBar, {
+        activeTab,
+        onTabChange: handleTabChange,
+        badges,
+        fps,
+        memory: memoryMB,
+        theme: currentTheme,
+        onClose: toggle,
+        onPositionCycle: handlePositionCycle,
+        onThemeToggle: handleThemeToggle,
+        tabs: allTabs,
+      }),
+      React.createElement("div", {
+        style: { flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" as const },
+      },
+        ActiveTabComponent
+          ? React.createElement(Suspense, {
+              fallback: React.createElement("div", {
+                style: { padding: 20, textAlign: "center", color: currentTheme.textFaint },
+              }, "Loading…"),
+            },
+              React.createElement(ActiveTabComponent, null),
+            )
+          : pluginRender
+            ? pluginRender()
+            : React.createElement("div", {
+                style: { padding: 20, textAlign: "center", color: currentTheme.textFaint },
+              }, `Unknown tab: ${activeTab}`),
+      ),
+    ),
+    getPortalContainer(),
+  );
 }

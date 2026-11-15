@@ -3,6 +3,7 @@ import { NetworkEntry, uid } from "@allem-dev/core";
 /** In-memory store for network requests */
 export class NetworkStore {
   private entries: NetworkEntry[] = [];
+  private snapshot: NetworkEntry[] = [];
   private maxEntries: number;
   private listeners = new Set<() => void>();
 
@@ -26,8 +27,13 @@ export class NetworkStore {
     }
   }
 
-  getAll(): NetworkEntry[] { return [...this.entries]; }
-  clear(): void { this.entries = []; this.notify(); }
+  getAll = (): NetworkEntry[] => this.snapshot;
+
+  clear(): void {
+    this.entries = [];
+    this.notify();
+  }
+
   getCount(): number { return this.entries.length; }
 
   getByStatus(status: "pending" | "success" | "error"): NetworkEntry[] {
@@ -38,12 +44,13 @@ export class NetworkStore {
     });
   }
 
-  subscribe(listener: () => void): () => void {
+  subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
-  }
+  };
 
   private notify(): void {
+    this.snapshot = [...this.entries];
     this.listeners.forEach((fn) => fn());
   }
 }

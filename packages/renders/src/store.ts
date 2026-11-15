@@ -3,6 +3,7 @@ import { RenderEntry, uid } from "@allem-dev/core";
 /** In-memory store for render tracking */
 export class RenderStore {
   private entries: RenderEntry[] = [];
+  private snapshot: RenderEntry[] = [];
   private renderCounts = new Map<string, number>();
   private maxEntries: number;
   private listeners = new Set<() => void>();
@@ -21,8 +22,14 @@ export class RenderStore {
     return full;
   }
 
-  getAll(): RenderEntry[] { return [...this.entries]; }
-  clear(): void { this.entries = []; this.renderCounts.clear(); this.notify(); }
+  getAll = (): RenderEntry[] => this.snapshot;
+
+  clear(): void {
+    this.entries = [];
+    this.renderCounts.clear();
+    this.notify();
+  }
+
   getCount(): number { return this.entries.length; }
 
   getHotComponents(limit = 10): Array<{ component: string; count: number }> {
@@ -36,12 +43,13 @@ export class RenderStore {
     return this.entries.filter((e) => e.component === name);
   }
 
-  subscribe(listener: () => void): () => void {
+  subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
-  }
+  };
 
   private notify(): void {
+    this.snapshot = [...this.entries];
     this.listeners.forEach((fn) => fn());
   }
 }
