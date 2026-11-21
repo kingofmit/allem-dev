@@ -27,8 +27,15 @@ coverage
 .env.*
 !.env.example
 
-# Playwright MCP artifacts
+# AI tool artifacts
 .playwright-mcp
+.claude
+.codeagento
+.cursor
+.aider
+.continue
+.copilot
+AGENTS.md
 
 # Screenshots from testing
 *.png
